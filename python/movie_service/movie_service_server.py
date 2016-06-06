@@ -2,8 +2,9 @@
 
 import movie_service_pb2
 import movie_service_resources
-
+import threadpool
 import time
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
@@ -54,5 +55,17 @@ def serve():
     except KeyboardInterrupt:
         server.stop(0)
 
+
+def serve_with_thread_pool():
+    server = movie_service_pb2.beta_create_MovieService_server(MovieServiceServicer(), ThreadPoolExecutor(100), 100)
+    # server = movie_service_pb2.beta_create_MovieService_server(MovieServiceServicer())
+    server.add_insecure_port('[::]:8980')
+    server.start()
+    try:
+        while True:
+            time.sleep(_ONE_DAY_IN_SECONDS)
+    except KeyboardInterrupt:
+        server.stop(0)
+
 if __name__ == '__main__':
-    serve()
+    serve_with_thread_pool()

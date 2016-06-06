@@ -18,7 +18,7 @@ class SerializationTest:
         if not os.path.exists(directory):
             os.makedirs(directory)
         ts = time.time()
-        st = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H_%M_%S')
+        st = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%HH%MM%SS')
         filepath = directory + "//Serialization_" + st + ".log"
 
         fh = logging.FileHandler(filepath)
@@ -42,15 +42,24 @@ class SerializationTest:
         self.logger.log(logging.INFO, "serialized length: %s", str(len(bytes)))
 
         total_ser = 0
+        total_deser = 0
         n = 10000
         for i in range(0, n):
             tic = timeit.default_timer()
             b = response.SerializeToString()
             elapsed = timeit.default_timer() - tic
             total_ser = total_ser + elapsed
-        avg_ser = (total_ser*(10**9))/n
+            tic2 = timeit.default_timer()
+            m = movie_service_pb2.MoviesInTheaterResponse()
+            m.ParseFromString(b)
+            elapsed2 = timeit.default_timer() - tic2
+            # print (str(m));
+            total_deser = total_deser + elapsed2
 
+        avg_ser = (total_ser*(10**9))/n
+        avg_deser = (total_deser*(10**9))/n
         self.logger.log(logging.INFO, "Serialization time: \n%s", avg_ser)
+        self.logger.log(logging.INFO, "De-serialization time: \n%s", avg_deser)
 
 
 if __name__ == '__main__':
